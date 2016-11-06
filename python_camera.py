@@ -9,10 +9,16 @@ import RPi.GPIO as GPIO
 #Import custom made 'python_dropbox' module
 import python_dropbox
 
+# Import python-env to allow storage of API key in .env file. RUN pip install python-env OTHERWISE THIS WILL BREAK THINGS.
+import dotenv;
+
 #Set GPIO pins for camera button
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(2, GPIO.IN)
+
+#Loading .env file into os.environ. DROPBOX_TOKEN to be stored here.
+dotenv.load();
 
 #Change display to tft screen
 os.environ["SDL_FBDEV"] = "/dev/fb1"
@@ -36,10 +42,12 @@ cam = pygame.camera.Camera(cam_list[0], (1080, 720))
 cam.start()
 
 #Declare variables that will be used in the code
-dropbox_token = 'hyEk4JkbPaUAAAAAAAAHGmoC94p8hU9K8zhTDxlD3cflpbZjUuIf_vz_muWXeb7o'
+#API tokens shouldn't be stored in code. Put the token in a .env file in the root of the directory.
+dropbox_token = dotenv.get("DROPBOX_TOKEN");
 local_dst = '/home/pi/Pictures'
 dropbox_dst = '/'
-upload_trigger = 0
+# upload_trigger can be in one of two states. This is the purpose of a boolean.
+upload_trigger = False
 
 #Define the 'takePicture' function that will:
 #1. Capture the image from the camera
@@ -80,23 +88,25 @@ while True:
 	
 	#Check to see if the upload variable is 1.
 	#If so, run the upload script and set the variable back to 0.
-	if (upload_trigger == 1):
+        # upload_trigger is a variable, don't need anything else here
+        # Parenthesis not needed
+	if upload_trigger:
 		if python_dropbox.dropbox_upload(dropbox_token, local_dst, dropbox_dst):
 			font = pygame.font.Font(None, 20)
                         text = font.render("Uploading...", 0, (0,250,250))
                         Surf = pygame.transform.rotate(text, -270)
                         screen.blit(Surf,(0,10))
                         pygame.display.flip()
-                        upload_trigger = 0
-		else:
-			upload_trigger = 1
+                        upload_trigger = False
+                        # Else branch is redundant
 
 	#Check to see if the GPIO button is triggered. If so, then:
 	#1. Run the 'take picture' function
-	#2. Refresh the screen and set the upload variable to 1. 
-	if ( GPIO.input(2) == False):
+	#2. Refresh the screen and set the upload variable to 1.
+        #<var> == False can be replaced with if not <var>
+	if not GPIO.input(2):
 		takePicture()
-		upload_trigger = 1
+		upload_trigger = True
 		sleep(1)
 
 	#For any error, stop the camera, quit pygame, and exit the program
