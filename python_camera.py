@@ -36,7 +36,7 @@ cam = pygame.camera.Camera(cam_list[0], (1080, 720))
 cam.start()
 
 #Declare variables that will be used in the code
-dropbox_token = 'hyEk4JkbPaUAAAAAAAAHGmoC94p8hU9K8zhTDxlD3cflpbZjUuIf_vz_muWXeb7o'
+dropbox_token = '[place your token here]'
 local_dst = '/home/pi/Pictures'
 dropbox_dst = '/'
 upload_trigger = 0
